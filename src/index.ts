@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -32,7 +33,7 @@ function getGraphClient() {
   });
 }
 
-// Replace the placeholder tool with a real Graph API call
+// Get Entra user by UPN (email)
 server.tool(
   "get-entra-user",
   "Get user info from Microsoft Entra by UPN",
@@ -48,6 +49,109 @@ server.tool(
           {
             type: "text",
             text: JSON.stringify(user, null, 2),
+          },
+        ],
+      };
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error: ${err instanceof Error ? err.message : String(err)}`,
+          },
+        ],
+      };
+    }
+  }
+);
+
+// Get all users in the tenant with optional filter
+server.tool(
+  "list-entra-users",
+  "List users from Microsoft Entra with optional filter",
+  {
+    filter: z.string().optional().describe("OData filter expression (e.g. startsWith(displayName,'John'))")
+  },
+  async ({ filter }) => {
+    try {
+      const client = getGraphClient();
+      let request = client.api('/users');
+      
+      if (filter) {
+        request = request.filter(filter);
+      }
+      
+      const users = await request.select('id,displayName,userPrincipalName,jobTitle,department').top(25).get();
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(users, null, 2),
+          },
+        ],
+      };
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error: ${err instanceof Error ? err.message : String(err)}`,
+          },
+        ],
+      };
+    }
+  }
+);
+
+// Get groups for a user
+server.tool(
+  "get-user-groups",
+  "Get groups that a user is a member of",
+  {
+    upn: z.string().describe("User Principal Name (email)")
+  },
+  async ({ upn }) => {
+    try {
+      const client = getGraphClient();
+      const groups = await client.api(`/users/${upn}/memberOf`).get();
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(groups, null, 2),
+          },
+        ],
+      };
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error: ${err instanceof Error ? err.message : String(err)}`,
+          },
+        ],
+      };
+    }
+  }
+);
+
+// Get organization details
+server.tool(
+  "get-organization",
+  "Get details about the organization",
+  {},
+  async () => {
+    try {
+      const client = getGraphClient();
+      const org = await client.api('/organization').get();
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(org, null, 2),
           },
         ],
       };

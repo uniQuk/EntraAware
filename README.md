@@ -23,21 +23,29 @@ EntraAware is an MCP server designed to connect to Microsoft 365 Entra (Azure AD
    npm start
    ```
 
+### Using with npx
+To run the server directly with npx:
+```bash
+npx @uniquk/entraaware
+```
+
 ### MCP Server Configuration Example
 Add to your VS Code `settings.json` or Claude for Desktop config:
 ```json
 "mcp": {
   "servers": {
     "EntraAware": {
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
-        "@github/uniQuk/entraAware"
+        "@uniquk/entraaware@latest"
       ],
       "env": {
         "TENANT_ID": "<your-tenant-id>",
         "CLIENT_ID": "<your-client-id>",
-        "CLIENT_SECRET": "<your-client-secret>"
+        "CLIENT_SECRET": "<your-client-secret>",
+        "NODE_OPTIONS": "--experimental-specifier-resolution=node"
       }
     }
   }
@@ -47,7 +55,8 @@ Add to your VS Code `settings.json` or Claude for Desktop config:
 ## Development
 - Main entry: `src/index.ts`
 - Build output: `build/index.js`
-- MCP config: `.vscode/mcp.json`
+- Binary entry: `bin/entraaware.js`
+- MCP config: `.github/mcp.json`
 
 ## References
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io/llms-full.txt)
