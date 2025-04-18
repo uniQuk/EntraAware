@@ -32,7 +32,7 @@ Add to your VS Code `settings.json` or Claude for Desktop config:
       "command": "npx",
       "args": [
         "-y",
-        "@github/uniQuk/enTraAware"
+        "@github/uniQuk/entraAware"
       ],
       "env": {
         "TENANT_ID": "<your-tenant-id>",
