@@ -7,56 +7,41 @@ EntraAware is an MCP server designed to connect to Microsoft 365 Entra (Azure AD
 - Exposes tools for retrieving data from your Entra tenant (e.g., user info, groups, etc.).
 - Ready for use in GitHub Copilot and Claude for Desktop via MCP protocol.
 
-## Installation
+## Installation & Running
 
-### Option 1: Using the installation script (recommended)
+### Method 1: Running the bundled server (recommended)
+The bundled version includes all dependencies and doesn't require npm at runtime:
+
 ```bash
 # Clone the repository
 git clone https://github.com/uniquk/entraaware.git
 cd entraaware
 
-# Run the installation script (handles registry configuration automatically)
-./install.sh
+# Build the bundle (only needs to be done once)
+npm install
+./bundle.sh
+
+# Run the server
+node dist/entraaware-launcher.mjs
 ```
 
-### Option 2: Manual installation with mixed registries
+### Method 2: Using npx with GitHub Packages
 ```bash
-# Install from GitHub Packages but fetch dependencies from public npm registry
-npm install --registry=https://registry.npmjs.org/ --scope=@uniquk --registry=https://npm.pkg.github.com/ @uniquk/entraaware
+# Run directly with npx (requires proper npm config for GitHub Packages)
+npx --registry=https://npm.pkg.github.com @uniquk/entraaware
 ```
 
-## Usage
+## VS Code Configuration
+Add to your VS Code `settings.json`:
 
-### Local Development
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Build the project:
-   ```bash
-   npm run build
-   ```
-3. Run the server:
-   ```bash
-   npm start
-   ```
-
-### Using with npx
-After installation, run the server:
-```bash
-npx entraaware
-```
-
-### MCP Server Configuration Example
-Add to your VS Code `settings.json` or Claude for Desktop config:
 ```json
 "mcp": {
   "servers": {
     "EntraAware": {
       "type": "stdio",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "entraaware"
+        "/path/to/entraaware/dist/entraaware-launcher.mjs"
       ],
       "env": {
         "TENANT_ID": "<your-tenant-id>",
@@ -86,16 +71,26 @@ EntraAware exposes the following tools through the MCP protocol:
    - No parameters required
 
 ## Development
-- Main entry: `src/index.ts`
-- Build output: `build/index.js`
-- Binary entry: `bin/entraaware.js`
-- MCP config: `.github/mcp.json`
+```bash
+# Install dependencies
+npm install
+
+# Build TypeScript
+npm run build
+
+# Build bundled version
+npm run bundle 
+
+# Run the server
+npm start
+```
 
 ## Publishing
 To publish updates to GitHub Packages:
 ```bash
-npm run publish-github
+npm publish
 ```
+This will automatically build the bundle before publishing.
 
 ## References
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io/llms-full.txt)

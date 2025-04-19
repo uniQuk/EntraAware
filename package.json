@@ -1,17 +1,18 @@
 {
   "name": "@uniquk/entraaware",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "type": "module",
   "main": "build/index.js",
   "bin": {
-    "entraaware": "bin/entraaware.js"
+    "entraaware": "dist/entraaware-launcher.mjs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && chmod 755 build/index.js && mkdir -p bin && echo '#!/usr/bin/env node\nimport { fileURLToPath } from \"url\";\nimport { dirname, resolve } from \"path\";\nimport { createRequire } from \"module\";\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = dirname(__filename);\nconst require = createRequire(import.meta.url);\n\nimport(\"../build/index.js\").catch(err => {\n  console.error(\"Failed to start EntraAware:\", err);\n  process.exit(1);\n});' > bin/entraaware.js && chmod 755 bin/entraaware.js",
-    "start": "node --experimental-specifier-resolution=node build/index.js",
-    "pkg-fix": "npm pkg fix",
-    "publish-github": "npm publish"
+    "bundle": "./bundle.sh",
+    "prepublishOnly": "npm run bundle",
+    "start": "node dist/entraaware-launcher.mjs",
+    "pkg-fix": "npm pkg fix"
   },
   "keywords": [],
   "author": "",
@@ -19,20 +20,21 @@
   "description": "MCP server for Microsoft Entra (Azure AD) integration",
   "files": [
     "build",
-    "bin"
+    "bin",
+    "dist"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
+    "esbuild": "^0.20.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "@azure/identity": "^4.9.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@modelcontextprotocol/sdk": "^1.10.1",
-    "@uniquk/entraaware": "^1.0.6",
     "zod": "^3.24.3"
   }
 }
