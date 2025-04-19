@@ -1,6 +1,6 @@
 {
   "name": "@north7/entraaware",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "module",
   "main": "build/index.js",
   "bin": {
@@ -13,10 +13,16 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["mcp-server", "entra", "azure-ad", "mcp", "microsoft-graph"],
-  "author": "",
-  "license": "ISC",
-  "description": "MCP server for querying Entra and Azure",
+  "keywords": ["mcp-server", "entra", "azure-ad", "mcp", "microsoft-graph", "azure-api"],
+  "author": "North7",
+  "contributors": [
+    {
+      "name": "Merill Fernando",
+      "url": "https://github.com/merill/lokka"
+    }
+  ],
+  "license": "MIT",
+  "description": "MCP server for querying Microsoft Entra (Azure AD) and Azure Resource Management APIs",
   "files": [
     "build"
   ],
