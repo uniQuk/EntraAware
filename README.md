@@ -6,7 +6,7 @@ A lightweight Model Context Protocol (MCP) server for querying Microsoft Entra (
 
 EntraAware is an MCP Server that allows AI assistants to directly access your Microsoft Entra (Azure AD) tenant data through the Microsoft Graph API and Azure Resource Management API. With EntraAware, you can ask natural language questions or make structured API calls to your Microsoft cloud environments.
 
-This project is inspired by and builds upon the [Lokka-Microsoft](https://github.com/lokkamcp/microsoft) MCP server (MIT license).
+This project is inspired by and builds upon the [Lokka-Microsoft](https://github.com/merill/lokka) MCP server (MIT license).
 
 ## Setup
 

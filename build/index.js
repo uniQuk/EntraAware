@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+/**
+ * EntraAware MCP Server
+ *
+ * Portions of this code are adapted from the Lokka-Microsoft MCP Server (MIT License)
+ * Original repository: https://github.com/merill/lokka
+ */
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -11,13 +17,14 @@ let azureCredential = null;
 // Create server instance
 const server = new McpServer({
     name: "EntraAware",
-    version: "0.0.5",
+    version: "0.0.6",
     capabilities: {
         resources: {},
         tools: {},
     },
 });
 // SHARED UTILITIES
+// The following credential handling utilities are adapted from Lokka-Microsoft
 function getCredentials() {
     const tenantId = process.env.TENANT_ID;
     const clientId = process.env.CLIENT_ID;
@@ -72,6 +79,7 @@ async function getLatestApiVersion(providerNamespace, resourceType) {
         return '2021-04-01';
     }
 }
+// This Azure credential handling approach is similar to Lokka-Microsoft
 function getAzureCredential() {
     if (!azureCredential) {
         try {
@@ -95,6 +103,7 @@ function getAzureCredential() {
     }
     return azureCredential;
 }
+// Response formatting utilities inspired by Lokka-Microsoft
 function formatApiResponse(apiType, method, path, result) {
     return {
         content: [
@@ -143,6 +152,7 @@ function processODataParams({ queryParams = {}, select, filter, expand, orderBy,
     return processedParams;
 }
 // MICROSOFT GRAPH API TOOL
+// This tool implementation is inspired by and adapted from Lokka-Microsoft's Graph API handling
 server.tool("askEntra", "Direct access to Microsoft Graph API for accurate Entra (Azure AD) data", {
     path: z.string().describe("The Graph API URL path (e.g. '/users/{id}/memberOf', '/directoryRoles')"),
     method: z.enum(["get", "post", "put", "patch", "delete"]).default("get").describe("HTTP method to use"),
@@ -242,6 +252,7 @@ server.tool("askEntra", "Direct access to Microsoft Graph API for accurate Entra
     }
 });
 // AZURE RESOURCE MANAGEMENT API TOOL
+// This tool implementation is inspired by and adapted from Lokka-Microsoft's Azure API handling
 server.tool("askAzure", "Direct access to Azure Resource Management API for managing Azure resources", {
     path: z.string().describe("The Azure API path (e.g. '/subscriptions', '/resourceGroups/{name}')"),
     method: z.enum(["get", "post", "put", "patch", "delete"]).default("get").describe("HTTP method to use"),
