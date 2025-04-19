@@ -1,6 +1,6 @@
 {
   "name": "@north7/entraaware",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "type": "module",
   "main": "build/index.js",
   "bin": {
@@ -16,7 +16,7 @@
   "keywords": ["mcp-server", "entra", "azure-ad", "mcp", "microsoft-graph"],
   "author": "",
   "license": "ISC",
-  "description": "MCP server for Microsoft Entra (Azure AD) integration",
+  "description": "MCP server for querying Entra and Azure",
   "files": [
     "build"
   ],
