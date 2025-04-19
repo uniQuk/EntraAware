@@ -33,6 +33,62 @@ function getCredentials(): { tenantId: string; clientId: string; clientSecret: s
   return { tenantId, clientId, clientSecret };
 }
 
+// Helper to fetch the latest API version for a given resource provider and resource type
+async function getLatestApiVersion(
+  providerNamespace: string, 
+  resourceType?: string
+): Promise<string> {
+  try {
+    // Get Azure credential
+    const credential = getAzureCredential();
+    
+    // Get access token
+    const tokenResponse = await credential.getToken("https://management.azure.com/.default");
+    if (!tokenResponse?.token) throw new Error("Failed to acquire Azure access token");
+
+    // Prepare request options
+    const headers = {
+      'Authorization': `Bearer ${tokenResponse.token}`,
+      'Content-Type': 'application/json'
+    };
+    
+    // Make request to list provider details
+    const url = `https://management.azure.com/providers/${providerNamespace}?api-version=2021-04-01`;
+    const response = await fetch(url, { method: 'GET', headers });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch API versions: ${response.status}`);
+    }
+    
+    const providerData = await response.json();
+    
+    // If resourceType is specified, find that specific type
+    if (resourceType) {
+      const resourceTypeInfo = providerData.resourceTypes.find(
+        (rt: any) => rt.resourceType.toLowerCase() === resourceType.toLowerCase()
+      );
+      
+      if (resourceTypeInfo && resourceTypeInfo.apiVersions && resourceTypeInfo.apiVersions.length > 0) {
+        // Return the first (most recent) API version
+        return resourceTypeInfo.apiVersions[0];
+      }
+    } else {
+      // Otherwise, just return a stable API version for the provider
+      // Providers typically have their most recent versions first
+      if (providerData.apiVersions && providerData.apiVersions.length > 0) {
+        return providerData.apiVersions[0];
+      }
+    }
+    
+    // If we get here, we couldn't find a good API version
+    throw new Error(`Could not find API version for ${providerNamespace}${resourceType ? '/' + resourceType : ''}`);
+  } catch (error) {
+    console.error(`Error fetching API versions: ${error instanceof Error ? error.message : String(error)}`);
+    // Return a default fallback version - you might want to customize this per provider
+    return '2021-04-01';
+  }
+}
+
 function getAzureCredential(): DefaultAzureCredential | ClientSecretCredential {
   if (!azureCredential) {
     try {
@@ -295,21 +351,31 @@ server.tool(
       const defaultApiVersions: ResourceProviderVersions = {
         'resources': '2021-04-01',
         'resourceGroups': '2021-04-01',
-        'subscriptions': '2021-01-01',
+        'subscriptions': '2022-12-01',
         'providers': '2021-04-01',
         'deployments': '2021-04-01',
         'Microsoft.Compute/virtualMachines': '2023-03-01',
         'Microsoft.Storage/storageAccounts': '2023-01-01',
         'Microsoft.Network/virtualNetworks': '2023-04-01',
         'Microsoft.KeyVault/vaults': '2023-02-01',
-        'Microsoft.Billing/billingAccounts': '2023-11-01',
+        'Microsoft.Billing/billingAccounts': '2024-04-01',
         'Microsoft.CostManagement/query': '2023-03-01'
       };
 
       // Set default API version for common paths if not provided
       if (!apiVersion && !queryParams['api-version']) {
         if (path === '/subscriptions') {
-          apiVersion = '2022-12-01'; // Default API version for listing subscriptions
+          apiVersion = defaultApiVersions['subscriptions']; // Default API version for listing subscriptions
+        }
+      }
+
+      let extractedProviderNamespace: string | null = null;
+
+      // Try to extract provider namespace from the path if not explicitly provided
+      if (!providerNamespace && path.includes('/providers/')) {
+        const match = path.match(/\/providers\/([^\/]+)/);
+        if (match && match[1]) {
+          extractedProviderNamespace = match[1];
         }
       }
 
@@ -362,7 +428,21 @@ server.tool(
             path = `/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/${providerNamespace}/${resourceType}/${resourceName}`;
             method = 'put';
             const providerResourceKey = `${providerNamespace}/${resourceType}`;
-            apiVersion = apiVersion || defaultApiVersions[providerResourceKey] || '2021-04-01';
+            // Try to get the API version for this resource type
+            if (!apiVersion) {
+              // First check our default versions
+              apiVersion = defaultApiVersions[providerResourceKey];
+              
+              // If not found in defaults, try to fetch it dynamically
+              if (!apiVersion && providerNamespace) {
+                try {
+                  apiVersion = await getLatestApiVersion(providerNamespace, resourceType);
+                } catch (error) {
+                  console.error(`Error fetching API version: ${error instanceof Error ? error.message : String(error)}`);
+                  apiVersion = '2021-04-01'; // Fall back to a safe default
+                }
+              }
+            }
             break;
 
           case 'deployTemplate':
@@ -382,8 +462,38 @@ server.tool(
             path = `/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/${providerNamespace}/${resourceType}/${resourceName}`;
             method = 'delete';
             const deleteResourceKey = `${providerNamespace}/${resourceType}`;
-            apiVersion = apiVersion || defaultApiVersions[deleteResourceKey] || '2021-04-01';
+            // Try to get the API version for this resource type
+            if (!apiVersion) {
+              // First check our default versions
+              apiVersion = defaultApiVersions[deleteResourceKey]; 
+              
+              // If not found in defaults, try to fetch it dynamically
+              if (!apiVersion && providerNamespace) {
+                try {
+                  apiVersion = await getLatestApiVersion(providerNamespace, resourceType);
+                } catch (error) {
+                  console.error(`Error fetching API version: ${error instanceof Error ? error.message : String(error)}`);
+                  apiVersion = '2021-04-01'; // Fall back to a safe default
+                }
+              }
+            }
             break;
+        }
+      } else if (extractedProviderNamespace && !apiVersion && !queryParams['api-version']) {
+        // For custom operations, try to get the API version based on the path
+        try {
+          // Try to extract resource type from path if possible
+          let extractedResourceType: string | undefined;
+          const resourceTypeMatch = path.match(/\/providers\/[^\/]+\/([^\/]+)\/?/);
+          if (resourceTypeMatch && resourceTypeMatch[1]) {
+            extractedResourceType = resourceTypeMatch[1];
+          }
+          
+          // Fetch the latest API version
+          apiVersion = await getLatestApiVersion(extractedProviderNamespace, extractedResourceType);
+        } catch (error) {
+          console.error(`Error fetching API version from path: ${error instanceof Error ? error.message : String(error)}`);
+          // Don't set a default here, let the error handling below catch it
         }
       }
 
