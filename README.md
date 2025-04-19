@@ -111,28 +111,6 @@ Direct access to Azure Resource Management API for managing Azure resources.
   "subscriptionId": "your-subscription-id"
 }
 ```
-
-#### 3. Lokka-Microsoft (Compatibility Layer)
-
-A compatibility layer for the Lokka-Microsoft MCP server to ensure backward compatibility.
-
-```javascript
-// Query Graph API
-{
-  "apiType": "graph",
-  "path": "/users",
-  "method": "get"
-}
-
-// Query Azure API
-{
-  "apiType": "azure",
-  "path": "/subscriptions",
-  "method": "get",
-  "apiVersion": "2022-12-01"
-}
-```
-
 ## License
 
 MIT License - See LICENSE file for details.

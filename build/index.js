@@ -17,7 +17,7 @@ let azureCredential = null;
 // Create server instance
 const server = new McpServer({
     name: "EntraAware",
-    version: "0.0.6",
+    version: "0.0.7",
     capabilities: {
         resources: {},
         tools: {},
