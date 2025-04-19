@@ -1,5 +1,5 @@
 {
-  "name": "@uniquk/entraaware",
+  "name": "@north7/entraaware",
   "version": "0.0.1",
   "type": "module",
   "main": "build/index.js",
@@ -9,6 +9,9 @@
   "scripts": {
     "build": "tsc && chmod 755 build/index.js",
     "start": "node build/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": ["mcp-server", "entra", "azure-ad", "mcp", "microsoft-graph"],
   "author": "",

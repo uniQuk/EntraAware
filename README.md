@@ -36,7 +36,7 @@ Create a `.mcp.json` file in your VS Code workspace:
       "command": "npx",
       "args": [
         "-y",
-        "@uniquk/entraaware@latest"
+        "@north7/entraaware@latest"
       ],
       "env": {
         "TENANT_ID": "your-tenant-id",
