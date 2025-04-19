@@ -1,40 +1,30 @@
 {
   "name": "@uniquk/entraaware",
-  "version": "1.0.10",
+  "version": "0.0.1",
   "type": "module",
   "main": "build/index.js",
   "bin": {
-    "entraaware": "bin/static-runner.js"
+    "entraaware": "build/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && chmod 755 build/index.js",
-    "bundle": "./enhanced-bundle.sh",
-    "prepublishOnly": "npm run bundle",
-    "start": "node bundle-dist/run-bundled-server.js",
-    "pkg-fix": "npm pkg fix"
+    "start": "node build/index.js"
   },
   "keywords": ["mcp-server", "entra", "azure-ad", "mcp", "microsoft-graph"],
   "author": "",
   "license": "ISC",
   "description": "MCP server for Microsoft Entra (Azure AD) integration",
   "files": [
-    "build",
-    "bin",
-    "bundle-dist"
+    "build"
   ],
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
-  "devDependencies": {
-    "@types/node": "^22.14.1",
-    "esbuild": "^0.20.2",
-    "typescript": "^5.8.3"
-  },
   "dependencies": {
     "@azure/identity": "^4.9.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@modelcontextprotocol/sdk": "^1.10.1",
     "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "typescript": "^5.8.3"
   }
 }
